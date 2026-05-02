@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アラーム</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+  }
+
+  .container {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 40px 48px;
+    width: 360px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 28px;
+    letter-spacing: 2px;
+  }
+
+  .clock {
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 300;
+    letter-spacing: 4px;
+    margin-bottom: 32px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+
+  input[type="time"] {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 1.6rem;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 20px;
+    outline: none;
+    letter-spacing: 3px;
+  }
+
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+  }
+
+  .btn-set {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.9);
+    color: #764ba2;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: transform 0.1s, opacity 0.2s;
+  }
+
+  .btn-set:hover { opacity: 0.9; }
+  .btn-set:active { transform: scale(0.97); }
+
+  .alarm-list {
+    margin-top: 24px;
+  }
+
+  .alarm-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    font-variant-numeric: tabular-nums;
+    transition: background 0.2s;
+  }
+
+  .alarm-item.active {
+    background: rgba(255,255,255,0.25);
+    box-shadow: 0 0 12px rgba(255,255,255,0.2);
+  }
+
+  .alarm-item .time-label { font-weight: 700; letter-spacing: 2px; }
+
+  .alarm-item .controls { display: flex; gap: 10px; align-items: center; }
+
+  .toggle {
+    width: 42px; height: 24px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+    padding: 0;
+  }
+
+  .toggle.on { background: #4ecca3; }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: transform 0.2s;
+  }
+
+  .toggle.on::after { transform: translateX(18px); }
+
+  .del-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: color 0.2s;
+  }
+
+  .del-btn:hover { color: #ff6b6b; }
+
+  .empty {
+    text-align: center;
+    opacity: 0.5;
+    font-size: 0.9rem;
+    padding: 12px 0;
+  }
+
+  /* 発火モーダル */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 24px;
+    padding: 48px 40px;
+    text-align: center;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    animation: pop 0.3s ease;
+  }
+
+  @keyframes pop {
+    from { transform: scale(0.8); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+
+  .modal .ring { font-size: 3.5rem; animation: shake 0.5s infinite; }
+
+  @keyframes shake {
+    0%,100% { transform: rotate(0);   }
+    25%      { transform: rotate(15deg); }
+    75%      { transform: rotate(-15deg); }
+  }
+
+  .modal h2 { font-size: 1.6rem; margin: 16px 0 8px; }
+  .modal .modal-time { font-size: 2.4rem; font-weight: 300; letter-spacing: 4px; margin-bottom: 28px; }
+
+  .stop-btn {
+    padding: 14px 40px;
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    background: #fff;
+    color: #764ba2;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: opacity 0.2s;
+  }
+
+  .stop-btn:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>⏰ アラーム</h1>
+  <div class="clock" id="clock">00:00:00</div>
+
+  <label>アラーム時刻</label>
+  <input type="time" id="timeInput">
+
+  <button class="btn-set" onclick="addAlarm()">セット</button>
+
+  <div class="alarm-list" id="alarmList"></div>
+</div>
+
+<!-- 発火モーダル -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="ring">🔔</div>
+    <h2>アラーム！</h2>
+    <div class="modal-time" id="modalTime"></div>
+    <button class="stop-btn" onclick="stopAlarm()">止める</button>
+  </div>
+</div>
+
+<script>
+  let alarms = [];
+  let firingId = null;
+  let audioCtx = null;
+  let gainNode = null;
+  let oscillators = [];
+
+  // 現在時刻表示
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+  }
+
+  // アラーム追加
+  function addAlarm() {
+    const val = document.getElementById('timeInput').value;
+    if (!val) return;
+    const id = Date.now();
+    alarms.push({ id, time: val, on: true });
+    render();
+  }
+
+  // 描画
+  function render() {
+    const list = document.getElementById('alarmList');
+    if (alarms.length === 0) {
+      list.innerHTML = '<div class="empty">アラームなし</div>';
+      return;
+    }
+    list.innerHTML = alarms.map(a => `
+      <div class="alarm-item ${a.on ? 'active' : ''}" id="item-${a.id}">
+        <span class="time-label">${a.time}</span>
+        <div class="controls">
+          <button class="toggle ${a.on ? 'on' : ''}" onclick="toggleAlarm(${a.id})"></button>
+          <button class="del-btn" onclick="deleteAlarm(${a.id})">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function toggleAlarm(id) {
+    const a = alarms.find(x => x.id === id);
+    if (a) a.on = !a.on;
+    render();
+  }
+
+  function deleteAlarm(id) {
+    alarms = alarms.filter(x => x.id !== id);
+    render();
+  }
+
+  // アラームチェック（毎秒）
+  function checkAlarms() {
+    const now = new Date();
+    const hm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    const sec = now.getSeconds();
+    if (sec !== 0) return; // 毎分0秒に判定
+
+    alarms.forEach(a => {
+      if (a.on && a.time === hm && firingId === null) {
+        fire(a);
+      }
+    });
+  }
+
+  function fire(alarm) {
+    firingId = alarm.id;
+    document.getElementById('modalTime').textContent = alarm.time;
+    document.getElementById('modalOverlay').classList.add('show');
+    startBeep();
+  }
+
+  function stopAlarm() {
+    document.getElementById('modalOverlay').classList.remove('show');
+    stopBeep();
+    // 発火したアラームをOFFに
+    const a = alarms.find(x => x.id === firingId);
+    if (a) a.on = false;
+    firingId = null;
+    render();
+  }
+
+  // Web Audio API でビープ音
+  function startBeep() {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    gainNode = audioCtx.createGain();
+    gainNode.gain.value = 0.4;
+    gainNode.connect(audioCtx.destination);
+    playPattern();
+  }
+
+  function playPattern() {
+    if (!audioCtx) return;
+    const freqs = [880, 1100, 880, 1100];
+    let t = audioCtx.currentTime;
+    oscillators = [];
+    freqs.forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      osc.connect(gainNode);
+      osc.start(t + i * 0.25);
+      osc.stop(t + i * 0.25 + 0.18);
+      oscillators.push(osc);
+    });
+    // 1.5秒後に繰り返し
+    setTimeout(() => { if (audioCtx) playPattern(); }, 1500);
+  }
+
+  function stopBeep() {
+    if (audioCtx) {
+      audioCtx.close();
+      audioCtx = null;
+      gainNode = null;
+      oscillators = [];
+    }
+  }
+
+  // 初期表示
+  render();
+  setInterval(updateClock, 1000);
+  setInterval(checkAlarms, 1000);
+  updateClock();
+</script>
+</body>
+</html>

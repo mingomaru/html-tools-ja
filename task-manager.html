@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>タスク管理</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #fff;
+      font-size: 2rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .subtitle {
+      color: rgba(255,255,255,0.8);
+      text-align: center;
+      font-size: 0.9rem;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.97);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      margin-bottom: 20px;
+    }
+
+    /* ── Input Form ── */
+    .form-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e8e8f0;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+      color: #333;
+    }
+
+    input[type="text"]:focus { border-color: #667eea; }
+
+    select {
+      padding: 12px 14px;
+      border: 2px solid #e8e8f0;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      outline: none;
+      cursor: pointer;
+      background: #fff;
+      color: #555;
+      transition: border-color 0.2s;
+    }
+
+    select:focus { border-color: #667eea; }
+
+    .btn-add {
+      padding: 12px 22px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .btn-add:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-add:active { transform: translateY(0); }
+
+    .tag-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tag-input-row input { flex: 1; }
+
+    .tag-hint { font-size: 0.78rem; color: #aaa; white-space: nowrap; }
+
+    /* ── Filter Bar ── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .filter-btn {
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 2px solid #e0e0f0;
+      background: #fff;
+      color: #888;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .filter-label { font-size: 0.8rem; color: #bbb; font-weight: 600; }
+
+    /* ── Stats ── */
+    .stats {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      flex: 1;
+      padding: 14px;
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 1.6rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-top: 4px;
+      opacity: 0.75;
+    }
+
+    .stat-all    { background: #f0f0ff; color: #667eea; }
+    .stat-active { background: #fff0f5; color: #f56565; }
+    .stat-done   { background: #f0fff4; color: #48bb78; }
+
+    /* ── Task List ── */
+    .task-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: #fff;
+      border: 2px solid #f0f0f8;
+      transition: all 0.2s;
+      animation: slideIn 0.25s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .task-item:hover { border-color: #c8c8f0; box-shadow: 0 4px 12px rgba(102,126,234,0.1); }
+
+    .task-item.done { background: #f9f9fd; border-color: #e8e8f0; }
+
+    .task-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2.5px solid #c0c0d8;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      background: #fff;
+    }
+
+    .task-check.checked {
+      background: linear-gradient(135deg, #48bb78, #38a169);
+      border-color: transparent;
+    }
+
+    .task-check.checked::after {
+      content: '✓';
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .task-body { flex: 1; min-width: 0; }
+
+    .task-text {
+      font-size: 0.95rem;
+      color: #333;
+      font-weight: 500;
+      word-break: break-word;
+    }
+
+    .task-item.done .task-text {
+      text-decoration: line-through;
+      color: #aaa;
+    }
+
+    .task-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+      align-items: center;
+    }
+
+    .cat-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 20px;
+      color: #fff;
+    }
+
+    .tag-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: #f0f0ff;
+      color: #667eea;
+      border: 1px solid #d0d0f0;
+    }
+
+    .btn-delete {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #ccc;
+      font-size: 1.1rem;
+      padding: 4px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .btn-delete:hover { color: #f56565; background: #fff0f0; }
+
+    .empty {
+      text-align: center;
+      color: #bbb;
+      font-size: 0.9rem;
+      padding: 40px 0;
+    }
+
+    .empty-icon { font-size: 2.5rem; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>📋 タスク管理</h1>
+  <p class="subtitle">今日やることを整理しよう</p>
+
+  <!-- Input Card -->
+  <div class="card">
+    <div class="form-row">
+      <input type="text" id="taskInput" placeholder="タスクを入力..." />
+      <select id="catSelect">
+        <option value="仕事">💼 仕事</option>
+        <option value="プライベート">🏠 プライベート</option>
+        <option value="勉強">📚 勉強</option>
+        <option value="健康">💪 健康</option>
+        <option value="その他">📌 その他</option>
+      </select>
+    </div>
+    <div class="form-row tag-input-row">
+      <input type="text" id="tagInput" placeholder="タグ（カンマ区切り）" />
+      <span class="tag-hint">例: 重要, 今日中</span>
+      <button class="btn-add" id="addBtn">＋ 追加</button>
+    </div>
+  </div>
+
+  <!-- Main Card -->
+  <div class="card">
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat stat-all">
+        <div class="stat-num" id="statAll">0</div>
+        <div class="stat-label">合計</div>
+      </div>
+      <div class="stat stat-active">
+        <div class="stat-num" id="statActive">0</div>
+        <div class="stat-label">未完了</div>
+      </div>
+      <div class="stat stat-done">
+        <div class="stat-num" id="statDone">0</div>
+        <div class="stat-label">完了</div>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-bar">
+      <span class="filter-label">表示：</span>
+      <button class="filter-btn active" data-filter="all">すべて</button>
+      <button class="filter-btn" data-filter="active">未完了</button>
+      <button class="filter-btn" data-filter="done">完了済み</button>
+    </div>
+    <div class="filter-bar" id="catFilterBar">
+      <span class="filter-label">カテゴリ：</span>
+      <button class="filter-btn active" data-cat="all">すべて</button>
+    </div>
+
+    <!-- Task List -->
+    <div class="task-list" id="taskList"></div>
+  </div>
+</div>
+
+<script>
+  const CATEGORY_COLORS = {
+    '仕事':       '#667eea',
+    'プライベート': '#f093fb',
+    '勉強':       '#4facfe',
+    '健康':       '#43e97b',
+    'その他':     '#f7971e',
+  };
+
+  let tasks = [];
+  let filterStatus = 'all';
+  let filterCat = 'all';
+
+  const taskInput = document.getElementById('taskInput');
+  const tagInput  = document.getElementById('tagInput');
+  const catSelect = document.getElementById('catSelect');
+  const addBtn    = document.getElementById('addBtn');
+  const taskList  = document.getElementById('taskList');
+
+  addBtn.addEventListener('click', addTask);
+  taskInput.addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+
+  function addTask() {
+    const text = taskInput.value.trim();
+    if (!text) { taskInput.focus(); return; }
+
+    const tags = tagInput.value.split(',').map(t => t.trim()).filter(Boolean);
+    tasks.unshift({ id: Date.now(), text, cat: catSelect.value, tags, done: false });
+
+    taskInput.value = '';
+    tagInput.value  = '';
+    taskInput.focus();
+
+    updateCatFilters();
+    render();
+  }
+
+  function toggleDone(id) {
+    const t = tasks.find(t => t.id === id);
+    if (t) t.done = !t.done;
+    render();
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    updateCatFilters();
+    render();
+  }
+
+  function updateCatFilters() {
+    const cats = [...new Set(tasks.map(t => t.cat))];
+    const bar = document.getElementById('catFilterBar');
+    bar.innerHTML = '<span class="filter-label">カテゴリ：</span>';
+
+    const allBtn = makeFilterCatBtn('all', 'すべて');
+    bar.appendChild(allBtn);
+    cats.forEach(c => bar.appendChild(makeFilterCatBtn(c, c)));
+  }
+
+  function makeFilterCatBtn(val, label) {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (filterCat === val ? ' active' : '');
+    btn.dataset.cat = val;
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      filterCat = val;
+      document.querySelectorAll('[data-cat]').forEach(b => b.classList.toggle('active', b.dataset.cat === val));
+      render();
+    });
+    return btn;
+  }
+
+  document.querySelectorAll('[data-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterStatus = btn.dataset.filter;
+      document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b === btn));
+      render();
+    });
+  });
+
+  function render() {
+    const visible = tasks.filter(t => {
+      if (filterStatus === 'active' && t.done)  return false;
+      if (filterStatus === 'done'   && !t.done) return false;
+      if (filterCat !== 'all' && t.cat !== filterCat) return false;
+      return true;
+    });
+
+    document.getElementById('statAll').textContent    = tasks.length;
+    document.getElementById('statActive').textContent = tasks.filter(t => !t.done).length;
+    document.getElementById('statDone').textContent   = tasks.filter(t =>  t.done).length;
+
+    if (visible.length === 0) {
+      taskList.innerHTML = `<div class="empty"><div class="empty-icon">✨</div>タスクがありません</div>`;
+      return;
+    }
+
+    taskList.innerHTML = '';
+    visible.forEach(t => {
+      const item = document.createElement('div');
+      item.className = 'task-item' + (t.done ? ' done' : '');
+
+      const check = document.createElement('div');
+      check.className = 'task-check' + (t.done ? ' checked' : '');
+      check.addEventListener('click', () => toggleDone(t.id));
+
+      const body = document.createElement('div');
+      body.className = 'task-body';
+      body.innerHTML = `<div class="task-text">${escHtml(t.text)}</div>`;
+
+      const meta = document.createElement('div');
+      meta.className = 'task-meta';
+
+      const catBadge = document.createElement('span');
+      catBadge.className = 'cat-badge';
+      catBadge.style.background = CATEGORY_COLORS[t.cat] || '#888';
+      catBadge.textContent = t.cat;
+      meta.appendChild(catBadge);
+
+      t.tags.forEach(tag => {
+        const tb = document.createElement('span');
+        tb.className = 'tag-badge';
+        tb.textContent = '#' + tag;
+        meta.appendChild(tb);
+      });
+
+      body.appendChild(meta);
+
+      const del = document.createElement('button');
+      del.className = 'btn-delete';
+      del.textContent = '✕';
+      del.title = '削除';
+      del.addEventListener('click', () => deleteTask(t.id));
+
+      item.appendChild(check);
+      item.appendChild(body);
+      item.appendChild(del);
+      taskList.appendChild(item);
+    });
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  render();
+</script>
+</body>
+</html>

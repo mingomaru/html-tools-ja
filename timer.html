@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>タイマー</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #1a1a2e;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .timer {
+      text-align: center;
+      background: #16213e;
+      border-radius: 20px;
+      padding: 50px 60px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .display {
+      font-size: 80px;
+      font-weight: 300;
+      color: #e0e0e0;
+      letter-spacing: 4px;
+      margin-bottom: 40px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .display.running {
+      color: #4ecca3;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    button {
+      padding: 14px 32px;
+      border: none;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    button:active { transform: scale(0.96); }
+
+    #startBtn  { background: #4ecca3; color: #1a1a2e; }
+    #stopBtn   { background: #e84545; color: #fff; }
+    #resetBtn  { background: #393e6e; color: #e0e0e0; }
+  </style>
+</head>
+<body>
+  <div class="timer">
+    <div class="display" id="display">00:00:00</div>
+    <div class="buttons">
+      <button id="startBtn" onclick="start()">スタート</button>
+      <button id="stopBtn"  onclick="stop()">ストップ</button>
+      <button id="resetBtn" onclick="reset()">リセット</button>
+    </div>
+  </div>
+
+  <script>
+    let elapsed = 0;
+    let startTime = null;
+    let intervalId = null;
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function format(ms) {
+      const h = Math.floor(ms / 3600000);
+      const m = Math.floor((ms % 3600000) / 60000);
+      const s = Math.floor((ms % 60000) / 1000);
+      return `${pad(h)}:${pad(m)}:${pad(s)}`;
+    }
+
+    function start() {
+      if (intervalId) return;
+      startTime = Date.now() - elapsed;
+      intervalId = setInterval(() => {
+        elapsed = Date.now() - startTime;
+        display.textContent = format(elapsed);
+      }, 100);
+      display.classList.add('running');
+    }
+
+    function stop() {
+      clearInterval(intervalId);
+      intervalId = null;
+      display.classList.remove('running');
+    }
+
+    function reset() {
+      stop();
+      elapsed = 0;
+      display.textContent = '00:00:00';
+    }
+
+    const display = document.getElementById('display');
+  </script>
+</body>
+</html>
