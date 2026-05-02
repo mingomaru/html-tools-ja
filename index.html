@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ツール集</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin-bottom: 40px;
+    opacity: 0.95;
+  }
+
+  .grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 300px;
+  }
+
+  a.card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 18px;
+    padding: 20px 24px;
+    text-decoration: none;
+    color: #fff;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  a.card:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-2px);
+  }
+
+  .icon { font-size: 2rem; }
+
+  .info .name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .info .desc {
+    font-size: 0.8rem;
+    opacity: 0.75;
+    margin-top: 3px;
+  }
+</style>
+</head>
+<body>
+  <h1>🛠 ツール集</h1>
+  <div class="grid">
+    <a class="card" href="alarm.html">
+      <span class="icon">⏰</span>
+      <div class="info">
+        <div class="name">アラーム</div>
+        <div class="desc">時刻指定・複数セット可能</div>
+      </div>
+    </a>
+    <a class="card" href="task-manager.html">
+      <span class="icon">✅</span>
+      <div class="info">
+        <div class="name">タスク管理</div>
+        <div class="desc">カテゴリ・タグ・フィルタ付き</div>
+      </div>
+    </a>
+    <a class="card" href="timer.html">
+      <span class="icon">⏱</span>
+      <div class="info">
+        <div class="name">タイマー</div>
+        <div class="desc">ストップウォッチ</div>
+      </div>
+    </a>
+  </div>
+</body>
+</html>
